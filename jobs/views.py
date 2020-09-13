@@ -1,44 +1,71 @@
 from django.http import Http404
 from django.shortcuts import render
-
-# Create your views here.
 from django.views import View
+from jobs.models import Specialty, Vacancy, Company
 
 
 class MainView(View):
 
     def get(self, request):
-        return render(request, "index.html")
+        specialties = [specialty for specialty in Specialty.objects.all()]
+        companies = [company for company in Company.objects.all()]
+        context = {
+            "specialties_line1": specialties[:4],
+            "specialties_line2": specialties[4:],
+            "companies_line1": companies[:4],
+            "companies_line2": companies[4:],
+        }
+
+        return render(request, "index.html", context)
 
 
 class VacanciesView(View):
 
     def get(self, request):
-        return render(request, "vacancies.html")
+        context = {
+            "category": "Все вакансии",
+            "vacancies": Vacancy.objects.all(),
+        }
+
+        return render(request, "vacancies.html", context)
 
 
 class SpecialtyView(View):
 
     def get(self, request, specialty: str):
-        if specialty != 'frontend':
+        data = Specialty.objects.filter(code=specialty)
+        if not data:
             raise Http404
 
-        return render(request, "vacancies.html")
+        context = {
+            "category": data.first().title,
+            "vacancies": data.first().vacancies.all(),
+        }
+
+        return render(request, "vacancies.html", context)
 
 
 class CompanyView(View):
 
     def get(self, request, company: int):
-        if company != 345:
+        if company not in Company.objects.values_list('id', flat=True):
             raise Http404
 
-        return render(request, "company.html")
+        context = {
+            'company': Company.objects.get(id=company)
+        }
+
+        return render(request, "company.html", context)
 
 
 class VacancyView(View):
 
     def get(self, request, vacancy: int):
-        if vacancy != 22:
+        if vacancy not in Vacancy.objects.values_list('id', flat=True):
             raise Http404
 
-        return render(request, "vacancy.html")
+        context = {
+            'vacancy': Vacancy.objects.get(id=vacancy)
+        }
+
+        return render(request, "vacancy.html", context)

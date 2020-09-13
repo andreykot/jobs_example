@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from pip._vendor.cachecontrol.heuristics import OneDayCache
 
 from jobs.views import MainView, VacanciesView, SpecialtyView, CompanyView, VacancyView
 
@@ -23,7 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', MainView.as_view()),
     path('vacancies/', VacanciesView.as_view()),
-    path('vacancies/cat/<str:specialty>', SpecialtyView.as_view()),
-    path('companies/<int:company>', CompanyView.as_view()),
-    path('vacancies/<int:vacancy>', VacancyView.as_view())
+    path('vacancies/cat/<str:specialty>/', SpecialtyView.as_view()),
+    path('companies/<int:company>/', CompanyView.as_view()),
+    path('vacancies/<int:vacancy>/', VacancyView.as_view())
 ]
