@@ -5,6 +5,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
+from jobs.models import Company
+
 
 class ApplicationForm(forms.Form):
     written_username = forms.CharField(max_length=200, label='Вас зовут')
@@ -16,7 +18,6 @@ class ApplicationForm(forms.Form):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-
         self.helper.form_class = 'form-group'
 
         self.helper.layout = Layout(
@@ -40,7 +41,6 @@ class RegistrationForm(UserCreationForm):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        # self.helper.form_action = '.'
         self.helper.form_class = "form-signin pt-5"
 
         self.helper.layout = Layout(
@@ -81,7 +81,6 @@ class LoginForm(AuthenticationForm):
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
-        # self.helper.form_action = 'login'
         self.helper.form_class = "form-signin pt-5"
 
         self.helper.layout = Layout(
@@ -108,3 +107,19 @@ class LoginForm(AuthenticationForm):
         )
 
 
+class MyCompanyForm(forms.ModelForm):
+    name = forms.CharField(max_length=200, label='Название компании')
+    location = forms.CharField(max_length=200, label='География')
+    logo = forms.ImageField(label='Логотип')
+    description = forms.CharField(widget=forms.Textarea, label='Информация о компании')
+    employee_count = forms.IntegerField(min_value=0, label='Количество человек в компании')
+
+    class Meta:
+        model = Company
+        fields = (
+            "name",
+            "location",
+            "logo",
+            "description",
+            "employee_count",
+        )

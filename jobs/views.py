@@ -2,13 +2,13 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.http import Http404, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render, redirect
 from django.views import View
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 
-from jobs.forms import ApplicationForm, RegistrationForm, LoginForm
+from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm
 from jobs.models import Specialty, Vacancy, Company, Application
 
 
@@ -73,67 +73,58 @@ class CompanyView(View):
 class VacancyView(View):
 
     def get(self, request, vacancy_id: int):
-        if not Vacancy.objects.filter(id=vacancy_id).exists():  # TODO
-            raise Http404
+        try:
+            vacancy = Vacancy.objects.get(id=vacancy_id)
+        except ObjectDoesNotExist:
+            return redirect('/vacancies/')
 
         context = {
-            'vacancy': Vacancy.objects.get(id=vacancy_id),
-            'form': ApplicationForm(),
+            'vacancy': vacancy,
+            'form': ApplicationForm() if request.user.is_authenticated else None,
         }
 
         return render(request, "vacancy.html", context)
 
     def post(self, request, vacancy_id: int):
-        """https://docs.djangoproject.com/en/3.1/topics/auth/default/"""
-
-        if not request.user.is_authenticated:
-            return HttpResponseServerError
-
-        if not User.objects.filter(id=request.user.id).exists():
-            return redirect('/signup/')
-
         application_form = ApplicationForm(request.POST)
         vacancy = Vacancy.objects.get(id=vacancy_id)
+
         if application_form.is_valid():
-            if Application.objects.filter(
+            if not Application.objects.filter(vacancy=vacancy, user=request.user).exists():
+                data = application_form.cleaned_data
+                Application.objects.create(
+                    written_username=data['written_username'],
+                    written_phone=data['written_phone'],
+                    written_cover_letter=data['written_cover_letter'],
                     vacancy=vacancy,
-                    user=request.user.id).\
-                    exists():
-                application_form.add_error('submit', 'Вы уже отправили заявку')
-                return redirect('/')
+                    user=request.user,
+                )
+                return render(request, "sent.html", {'url': request.build_absolute_uri()})
+            else:
+                application_form.add_error(None, 'Отправить отклик на вакансию можно только один раз :(')
 
-            data = application_form.cleaned_data
-            Application.objects.create(
-                written_username=data['written_username'],
-                written_phone=data['written_phone'],
-                written_cover_letter=data['written_cover_letter'],
-                vacancy=vacancy,
-                user=request.user,
-            )
+        context = {
+            'vacancy': vacancy,
+            'form': application_form,
+        }
 
-            return render(request, "sent.html", {'url': request.build_absolute_uri()})
-
-        elif "written_username" not in application_form.cleaned_data:
-            application_form.add_error('written_username', 'Вы не указали свое имя')
-
-        elif "written_phone" not in application_form.cleaned_data:
-            application_form.add_error('written_username', 'Вы не указали свой телефон')
-
-        elif "written_cover_letter" not in application_form.cleaned_data:
-            application_form.add_error('written_username', 'Вы не написали сопроводительное письмо')
-
-        else:
-            return HttpResponseServerError()
+        return render(request, "vacancy.html", context)
 
 
 class MyCompany(View):
 
     def get(self, request):
         try:
+            if request.path == '/mycompany/create/':
+                company = None
+            else:
+                company = Company.objects.get(owner_id=request.user.id)
+
             context = {
-                'company': Company.objects.get(owner_id=request.user.id)
+                'company': company,
+                'form': MyCompanyForm,
             }
-            return render(request, "company.html", context)
+            return render(request, "company-edit.html", context)
 
         except ObjectDoesNotExist:
             return render(request, "company-create.html")
@@ -176,6 +167,10 @@ class MyLoginView(LoginView):
     form_class = LoginForm
     redirect_authenticated_user = True
     template_name = 'login.html'
+
+
+class MyLogoutView(LogoutView):
+    next_page = '/'
 
 
 class MySignupView(CreateView):

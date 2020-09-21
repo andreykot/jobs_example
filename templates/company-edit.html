@@ -1,43 +1,7 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
 {% block container %}
-
-  <header class="container mt-3">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand mr-4 font-weight-bold" href="#">Джуманджи</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
-        <ul class="navbar-nav col-10">
-          <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Вакансии</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-dark" href="#">Компании</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-dark" href="#">О проекте</a>
-          </li>
-        </ul>
-        <ul class="navbar-nav col-2 justify-content-end">
-          <li class="nav-item active">
-            <div class="btn-group">
-              <button type="button" class="btn dropdown-toggle font-weight-bold" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Иван Топорыжкин
-              </button>
-              <div class="dropdown-menu dropdown-menu-right mt-3">
-                <a href="#" class="dropdown-item py-2">Профиль</a>
-                <a href="#" class="dropdown-item py-2">Резюме</a>
-                <a href="#" class="dropdown-item py-2">Компания</a>
-                <a href="#" class="dropdown-item py-2">Выйти</a>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </nav>
-  </header>
 
   <main class="container mt-3 pb-5">
     <div class="row mt-5">
@@ -63,8 +27,7 @@
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyName">Название компании</label>
-                      <input class="form-control" type="text" value="Staffing Smarter" id="companyName">
+                      {{ form.name|as_crispy_field }}
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
@@ -72,16 +35,9 @@
                       <label class="mb-2 text-dark" for="companyLogo">Логотип</label>
                       <div class="row align-items-center">
                         <div class="col-6">
-                          <img src="https://place-hold.it/120x40" alt="" style="max-width: 120px;height: auto;">
+                          <img src="{% if company %}{{ company.logo.url }}{% else %}{% endif %}" alt="" style="max-width: 120px;height: auto;">
                         </div>
-                        <div class="col-6" style="position: relative;">
-                          <div class="input-group-prepend" style="position: absolute; top: 0;right: 15px;">
-                            <span class="btn btn-info px-4">Загрузить</span>
-                          </div>
-                          <div class="custom-file" style="">
-                            <input type="file" class="custom-file-input" id="inputGroupFile01">
-                          </div>
-                        </div>
+                        {{ form.logo|as_crispy_field }}
                       </div>
                     </div>
                   </div>
@@ -89,20 +45,17 @@
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyTeam">Количество человек в компании</label>
-                      <input class="form-control" type="text" value="10-15" id="companyTeam">
+                      {{ form.employee_count|as_crispy_field }}
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
-                      <label class="mb-2 text-dark" for="companyLocation">География</label>
-                      <input class="form-control" type="text" value="Рязань" id="companyLocation">
+                      {{ form.location|as_crispy_field }}
                     </div>
                   </div>
                 </div>
                 <div class="form-group pb-2">
-                  <label class="mb-2 text-dark" for="companyInfo">Информация о&nbsp;компании</label>
-                  <textarea class="form-control" rows="4" id="companyInfo" style="color:#000;">Для тех, кто желает работать в&nbsp;комфортном офисе,&nbsp;&mdash; у&nbsp;нас их&nbsp;целых три. Исторически так сложилось, что руководство и&nbsp;менеджерский состав располагается в&nbsp;Москве (обусловлено близостью заказчиков), центр разработки&nbsp;&mdash; в&nbsp;Ульяновске, в&nbsp;т.&nbsp;ч. школа молодых разработчиков и&nbsp;QA-центр&nbsp;&mdash; в&nbsp;Казани.</textarea>
+                  {{ form.description|as_crispy_field }}
                 </div>
                 <div class="form-group">
                   <input type="submit" class="btn btn-info" value="Сохранить">
