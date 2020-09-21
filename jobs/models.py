@@ -16,8 +16,8 @@ class Company(models.Model):
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
     logo = models.ImageField(upload_to=settings.MEDIA_COMPANY_IMAGE_DIR)
-    description = models.TextField()
-    employee_count = models.IntegerField(null=True)
+    description = models.TextField(blank=True)
+    employee_count = models.PositiveIntegerField(blank=True, null=True)
     owner = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
@@ -31,8 +31,8 @@ class Vacancy(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='vacancies')
     skills = models.TextField()
     description = models.TextField()
-    salary_min = models.IntegerField()
-    salary_max = models.IntegerField()
+    salary_min = models.PositiveIntegerField()
+    salary_max = models.PositiveIntegerField()
     published_at = models.DateField()
 
     def __str__(self):
@@ -44,7 +44,7 @@ class Vacancy(models.Model):
 class Application(models.Model):
     written_username = models.CharField(max_length=200)
     written_phone = models.CharField(max_length=16)
-    written_cover_letter = models.TextField()
+    written_cover_letter = models.CharField(max_length=2000)
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='applications')
 

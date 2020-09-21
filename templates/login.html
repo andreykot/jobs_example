@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+{% load crispy_forms_tags %}
+
+<head>
+  <title>Джуманджи</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+  <main class="container">
+    <div class="row">
+      <div class="col-8 col-lg-4 offset-2 offset-lg-4">
+        {% crispy form %}
+        <div class="mt-4 text-center"><p>Нет аккаунта? <a href="/signup/">Зарегистрируйтесь!</a></p></div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
