@@ -28,7 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', MainView.as_view()),
     path('vacancies/', VacanciesView.as_view()),
-    path('vacancies/cat/<str:specialty>/', SpecialtyView.as_view()),
+    path('vacancies/cat/<str:specialty_code>/', SpecialtyView.as_view()),
     path('companies/<int:company_id>/', CompanyView.as_view()),
     path('vacancies/<int:vacancy_id>/', VacancyView.as_view()),
     path('signup/login/', MyLoginView.as_view()),

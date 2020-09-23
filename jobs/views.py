@@ -37,9 +37,10 @@ class MainView(View):
 class VacanciesView(View):
 
     def get(self, request):
+        vacancies = Vacancy.objects.filter(title__isnull=False)
         context = {
             "category": "Все вакансии",
-            "vacancies": Vacancy.objects.all(),
+            "vacancies": vacancies,
         }
 
         return render(request, "vacancies.html", context)
@@ -47,14 +48,16 @@ class VacanciesView(View):
 
 class SpecialtyView(View):
 
-    def get(self, request, specialty: str):
-        data = Specialty.objects.filter(code=specialty)
-        if not data:
+    def get(self, request, specialty_code: str):
+        try:
+            specialty = Specialty.objects.get(code=specialty_code)
+            vacancies = Vacancy.objects.filter(specialty=specialty)
+        except ObjectDoesNotExist:
             raise Http404
 
         context = {
-            "category": data.first().title,
-            "vacancies": data.first().vacancies.all(),
+            "category": specialty.title,
+            "vacancies": vacancies,
         }
 
         return render(request, "vacancies.html", context)
@@ -66,16 +69,15 @@ class CompanyView(View):
         try:
             company = Company.objects.get(id=company_id)
             vacancies = Vacancy.objects.filter(title__isnull=False, company=company)
-
-            context = {
-                'company': company,
-                'vacancies': vacancies,
-            }
-
-            return render(request, "company.html", context)
-
         except ObjectDoesNotExist:
             raise Http404
+
+        context = {
+            'company': company,
+            'vacancies': vacancies,
+            'previous_url': self.request.META['HTTP_REFERER'],
+        }
+        return render(request, "company.html", context)
 
 
 class VacancyView(View):
@@ -204,8 +206,10 @@ class MyVacanciesEditView(UpdateView):
         messages.success(request, 'Вакансия обновлена')
         return super().post(request, *args, **kwargs)
 
-    def form_valid(self, form):  # TODO добавить published_at
-        print(form)
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.published_at = datetime.now()
+        self.object.save()
         return super(MyVacanciesEditView, self).form_valid(form)
 
 
