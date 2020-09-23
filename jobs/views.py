@@ -1,12 +1,14 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import Http404, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render, redirect
+from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, FormView
 
 from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm
 from jobs.models import Specialty, Vacancy, Company, Application
@@ -25,7 +27,7 @@ class MainView(View):
     def get(self, request):
         context = {
             "specialties": Specialty.objects.all(),
-            "companies": Company.objects.all(),
+            "companies": Company.objects.exclude(name=None),
         }
 
         return render(request, "index.html", context)
@@ -111,30 +113,40 @@ class VacancyView(View):
         return render(request, "vacancy.html", context)
 
 
-class MyCompany(View):
+class MyCompanyView(UpdateView):
+    model = Company
+    form_class = MyCompanyForm
+    template_name = "company-edit.html"
+    success_url = "."
 
-    def get(self, request):
+    def get_object(self):
+        return Company.objects.get(owner=self.request.user)
+
+    def get(self, request, *args, **kwargs):
         try:
-            if request.path == '/mycompany/create/':
-                company = None
-            else:
-                company = Company.objects.get(owner_id=request.user.id)
-
-            context = {
-                'company': company,
-                'form': MyCompanyForm,
-            }
-            return render(request, "company-edit.html", context)
-
+            self.object = self.get_object()
         except ObjectDoesNotExist:
+            Company.objects.create(
+                name=None,
+                logo=None,
+                location=None,
+                description=None,
+                employee_count=None,
+                owner=request.user,
+            )
             return render(request, "company-create.html")
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Информация о компании обновлена')
+        return super().post(request, *args, **kwargs)
 
 
 class MyVacancies(View):
 
     def get(self, request):
         try:
-            company = Company.objects.get(owner_id=request.user.id)
+            company = Company.objects.get(owner=request.user)
 
             context = {
                 "category": company.name,
@@ -151,7 +163,7 @@ class MyVacancy(View):
 
     def get(self, request, vacancy_id: int):
         try:
-            company = Company.objects.get(owner_id=request.user.id)
+            company = Company.objects.get(owner=request.user)
             context = {
                 "vacancy": company.vacancies.get(id=vacancy_id),
                 'form': ApplicationForm(),

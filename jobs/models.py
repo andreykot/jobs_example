@@ -13,16 +13,20 @@ class Specialty(models.Model):
 
 
 class Company(models.Model):
-    name = models.CharField(max_length=200)
-    location = models.CharField(max_length=200)
-    logo = models.ImageField(upload_to=settings.MEDIA_COMPANY_IMAGE_DIR)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=200, null=True)
+    location = models.CharField(max_length=200, null=True)
+    logo = models.ImageField(upload_to=settings.MEDIA_COMPANY_IMAGE_DIR, null=True)
+    description = models.TextField(blank=True, null=True)
     employee_count = models.PositiveIntegerField(blank=True, null=True)
     owner = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return f"Company({self.name}, {self.location}, {self.logo}, " \
                f"{self.description}, {self.employee_count}, {self.owner})"
+
+    def delete(self, *args, **kwargs):
+        self.logo.storage.delete(self.logo.path)
+        super(Company, self).delete(*args, **kwargs)
 
 
 class Vacancy(models.Model):

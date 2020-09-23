@@ -10,7 +10,7 @@
           <h1 class="h4 pt-2 pb-2">Моя компания</h1>
           <div class="nav flex-column nav-pills">
             <a class="nav-link active" href="#">1. Информация о&nbsp;компании</a>
-            <a class="nav-link" href="#">2. Вакансии</a>
+            <a class="nav-link" href="/mycompany/vacancies/">2. Вакансии</a>
           </div>
         </aside>
       </div>
@@ -19,11 +19,15 @@
           <div class="card-body px-4 pb-4">
             <!-- Tab -->
             <section class="tab-pane fade show active">
-              <h2 class="h4 pt-2 pb-3">Информация о&nbsp;компании</h2>
-              <p class="alert alert-info" role="alert">
-                Информация о компании обновлена
-              </p>
-              <form action="/echo">
+              <h2 class="h4 pt-2 pb-3">Информация о компании</h2>
+              {% if messages %}
+                {% for message in messages %}
+                <p {% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %} role="alert">
+                  {{ message.message }}
+                </p>
+                {% endfor %}
+              {% endif %}
+              <form method="post" enctype="multipart/form-data">{% csrf_token %}
                 <div class="row">
                   <div class="col-12 col-md-6">
                     <div class="form-group pb-2">
@@ -31,15 +35,7 @@
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
-                    <div class="form-group">
-                      <label class="mb-2 text-dark" for="companyLogo">Логотип</label>
-                      <div class="row align-items-center">
-                        <div class="col-6">
-                          <img src="{% if company %}{{ company.logo.url }}{% else %}{% endif %}" alt="" style="max-width: 120px;height: auto;">
-                        </div>
-                        {{ form.logo|as_crispy_field }}
-                      </div>
-                    </div>
+                    {{ form.logo|as_crispy_field }}
                   </div>
                 </div>
                 <div class="row">
