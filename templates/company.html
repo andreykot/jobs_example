@@ -11,9 +11,9 @@
         <img src="{{ company.logo.url }}" width="130" height="80" alt="">
       </div>
       <h1 class="h1 text-center mx-auto mt-0 pt-1" style="font-size: 70px;"><strong>{{ company.name }}</strong></h1>
-      <p class="text-center pt-1">Компания, {{ company.vacancies.all|length }} вакансий</p>
+      <p class="text-center pt-1">Компания, {{ vacancies|length }} вакансий</p>
       <div class="row mt-5">
-        {% for vacancy in company.vacancies.all %}
+        {% for vacancy in vacancies %}
 
         <div class="col-12 col-lg-8 offset-lg-2 m-auto">
           <div class="card mb-4">

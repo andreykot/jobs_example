@@ -9,7 +9,7 @@ class Specialty(models.Model):
     picture = models.ImageField(upload_to=settings.MEDIA_SPECIALITY_IMAGE_DIR)
 
     def __str__(self):
-        return f"Specialty({self.code}, {self.title}, {self.picture})"
+        return f"{self.title}"
 
 
 class Company(models.Model):
@@ -24,20 +24,20 @@ class Company(models.Model):
         return f"Company({self.name}, {self.location}, {self.logo}, " \
                f"{self.description}, {self.employee_count}, {self.owner})"
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):  # TODO
         self.logo.storage.delete(self.logo.path)
         super(Company, self).delete(*args, **kwargs)
 
 
 class Vacancy(models.Model):
-    title = models.CharField(max_length=200)
-    specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='vacancies')
+    title = models.CharField(max_length=200, null=True)
+    specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='vacancies', null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='vacancies')
-    skills = models.TextField()
-    description = models.TextField()
-    salary_min = models.PositiveIntegerField()
-    salary_max = models.PositiveIntegerField()
-    published_at = models.DateField()
+    skills = models.TextField(null=True)
+    description = models.TextField(null=True)
+    salary_min = models.PositiveIntegerField(null=True)
+    salary_max = models.PositiveIntegerField(null=True)
+    published_at = models.DateField(null=True)
 
     def __str__(self):
         return f"Company({self.title}, {self.specialty}, {self.company}, " \

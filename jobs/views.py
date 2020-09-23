@@ -1,16 +1,14 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
-from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
+from django.db.models import Q, Count
 from django.http import Http404, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render, redirect
-from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, UpdateView, FormView
+from django.views.generic import CreateView, UpdateView
 
-from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm
+from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm, MyVacancyForm
 from jobs.models import Specialty, Vacancy, Company, Application
 
 
@@ -25,9 +23,12 @@ def custom_handler500(request, *args, **kwargs):
 class MainView(View):
 
     def get(self, request):
+        companies = Company.objects.filter(name__isnull=False)\
+            .annotate(vacancies_len=Count('vacancies', filter=Q(vacancies__title__isnull=False)))
+
         context = {
             "specialties": Specialty.objects.all(),
-            "companies": Company.objects.exclude(name=None),
+            "companies": companies,
         }
 
         return render(request, "index.html", context)
@@ -61,15 +62,20 @@ class SpecialtyView(View):
 
 class CompanyView(View):
 
-    def get(self, request, company: int):
-        if company not in Company.objects.values_list('id', flat=True):
+    def get(self, request, company_id: int):
+        try:
+            company = Company.objects.get(id=company_id)
+            vacancies = Vacancy.objects.filter(title__isnull=False, company=company)
+
+            context = {
+                'company': company,
+                'vacancies': vacancies,
+            }
+
+            return render(request, "company.html", context)
+
+        except ObjectDoesNotExist:
             raise Http404
-
-        context = {
-            'company': Company.objects.get(id=company)
-        }
-
-        return render(request, "company.html", context)
 
 
 class VacancyView(View):
@@ -142,6 +148,22 @@ class MyCompanyView(UpdateView):
         return super().post(request, *args, **kwargs)
 
 
+class MyVacancy(View):
+
+    def get(self, request, vacancy_id: int):
+        try:
+            company = Company.objects.get(owner=request.user)
+            context = {
+                "vacancy": company.vacancies.get(id=vacancy_id),
+                'form': ApplicationForm(),
+            }
+
+            return render(request, "vacancy.html", context)
+
+        except ObjectDoesNotExist:
+            raise Http404
+
+
 class MyVacancies(View):
 
     def get(self, request):
@@ -159,20 +181,45 @@ class MyVacancies(View):
             raise Http404
 
 
-class MyVacancy(View):
+class MyVacanciesListView(View):
 
-    def get(self, request, vacancy_id: int):
+    def get(self, request):
+        vacancies = Vacancy.objects.\
+            filter(company__owner=request.user).\
+            annotate(applications_count=Count('applications'))
+
+        context = {
+            'vacancies': vacancies,
+        }
+        return render(request, "vacancy-list.html", context)
+
+
+class MyVacanciesEditView(UpdateView):
+    model = Vacancy
+    form_class = MyVacancyForm
+    template_name = "vacancy-edit.html"
+    success_url = "."
+
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Вакансия обновлена')
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):  # TODO добавить published_at
+        print(form)
+        return super(MyVacanciesEditView, self).form_valid(form)
+
+
+class CreateMyVacancy(View):
+
+    def get(self, request):
         try:
-            company = Company.objects.get(owner=request.user)
-            context = {
-                "vacancy": company.vacancies.get(id=vacancy_id),
-                'form': ApplicationForm(),
-            }
-
-            return render(request, "vacancy.html", context)
+            new_vacancy = Vacancy.objects.create(
+                company=Company.objects.get(owner=request.user)
+            )
+            return redirect(f'/mycompany/vacancies-edit/{new_vacancy.pk}')
 
         except ObjectDoesNotExist:
-            raise Http404
+            raise HttpResponseServerError
 
 
 class MyLoginView(LoginView):

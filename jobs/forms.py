@@ -5,7 +5,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
-from jobs.models import Company
+from jobs.models import Company, Specialty, Vacancy
 
 
 class ApplicationForm(forms.Form):
@@ -122,4 +122,24 @@ class MyCompanyForm(forms.ModelForm):
             "logo",
             "description",
             "employee_count",
+        )
+
+
+class MyVacancyForm(forms.ModelForm):
+    title = forms.CharField(max_length=200, label='Название вакансии')
+    specialty = forms.ModelChoiceField(queryset=Specialty.objects, label='Специализация')
+    skills = forms.CharField(widget=forms.Textarea(attrs={'rows': 2}), label='Требуемые навыки')
+    description = forms.CharField(widget=forms.Textarea, label='Описание вакансии')
+    salary_min = forms.IntegerField(min_value=0, label='Зарплата от')
+    salary_max = forms.IntegerField(min_value=0, label='Зарплата до')
+
+    class Meta:
+        model = Vacancy
+        fields = (
+            "title",
+            "specialty",
+            "skills",
+            "description",
+            "salary_min",
+            "salary_max",
         )
