@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from jobs.views import MainView, VacanciesView, SpecialtyView, CompanyView, VacancyView, \
-    custom_handler404, custom_handler500, MySignupView, MyLoginView, MyLogoutView, MyCompanyView, MyVacancies, \
+    custom_handler404, custom_handler500, MySignupView, MyLoginView, MyLogoutView, MyCompanyEditView, MyVacancies, \
     MyVacancy, MyVacanciesEditView, MyVacanciesListView, CreateMyVacancy
 
 handler404 = custom_handler404
@@ -32,7 +32,7 @@ urlpatterns = [
     path('companies/<int:company_id>/', CompanyView.as_view()),
     path('vacancies/<int:vacancy_id>/', VacancyView.as_view()),
     path('signup/login/', MyLoginView.as_view()),
-    path('mycompany/', MyCompanyView.as_view()),
+    path('mycompany/', MyCompanyEditView.as_view()),
     path('mycompany/create-vacancy/', CreateMyVacancy.as_view()),
     path('mycompany/vacancies-edit/', MyVacanciesListView.as_view()),
     path('mycompany/vacancies-edit/<int:pk>/', MyVacanciesEditView.as_view()),

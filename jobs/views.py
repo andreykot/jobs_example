@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, SuspiciousOperation
 from django.contrib import messages
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q, Count
@@ -97,19 +97,28 @@ class VacancyView(View):
 
     def post(self, request, vacancy_id: int):
         application_form = ApplicationForm(request.POST)
-        vacancy = Vacancy.objects.get(id=vacancy_id)
+        try:
+            vacancy = Vacancy.objects.get(id=vacancy_id)
+        except ObjectDoesNotExist:
+            return HttpResponseServerError
 
         if application_form.is_valid():
             if not Application.objects.filter(vacancy=vacancy, user=request.user).exists():
-                data = application_form.cleaned_data
-                Application.objects.create(
-                    written_username=data['written_username'],
-                    written_phone=data['written_phone'],
-                    written_cover_letter=data['written_cover_letter'],
-                    vacancy=vacancy,
-                    user=request.user,
-                )
-                return render(request, "sent.html", {'url': request.build_absolute_uri()})
+                if application_form.is_valid():
+                    data = application_form.cleaned_data
+                    Application.objects.create(
+                        written_username=data['written_username'],
+                        written_phone=data['written_phone'],
+                        written_cover_letter=data['written_cover_letter'],
+                        vacancy=vacancy,
+                        user=request.user,
+                    )
+                elif "written_phone" not in application_form.cleaned_data:
+                    application_form.add_error("written_phone", 'Некорректный формат номера телефона')
+                else:
+                    raise SuspiciousOperation("Invalid request")
+
+                return render(request, "sent.html", {'vacancy_id': vacancy_id})
             else:
                 application_form.add_error(None, 'Отправить отклик на вакансию можно только один раз :(')
 
@@ -121,7 +130,7 @@ class VacancyView(View):
         return render(request, "vacancy.html", context)
 
 
-class MyCompanyView(UpdateView):
+class MyCompanyEditView(UpdateView):
     model = Company
     form_class = MyCompanyForm
     template_name = "company-edit.html"
@@ -133,6 +142,7 @@ class MyCompanyView(UpdateView):
     def get(self, request, *args, **kwargs):
         try:
             self.object = self.get_object()
+            return super().get(request, *args, **kwargs)
         except ObjectDoesNotExist:
             Company.objects.create(
                 name=None,
@@ -143,7 +153,6 @@ class MyCompanyView(UpdateView):
                 owner=request.user,
             )
             return render(request, "company-create.html")
-        return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         messages.success(request, 'Информация о компании обновлена')

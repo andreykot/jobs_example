@@ -1,6 +1,6 @@
 from crispy_forms.bootstrap import FormActions, AppendedText
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Div, Row, Column
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Div
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
@@ -10,7 +10,7 @@ from jobs.models import Company, Specialty, Vacancy
 
 class ApplicationForm(forms.Form):
     written_username = forms.CharField(max_length=200, label='Вас зовут')
-    written_phone = forms.CharField(max_length=16, label='Ваш телефон')
+    written_phone = forms.RegexField(regex=r'^\+?\d{9,15}$', label='Ваш телефон')
     written_cover_letter = forms.CharField(max_length=2000, widget=forms.Textarea, label='Сопроводительное письмо')
 
     def __init__(self, *args, **kwargs):

@@ -24,10 +24,6 @@ class Company(models.Model):
         return f"Company({self.name}, {self.location}, {self.logo}, " \
                f"{self.description}, {self.employee_count}, {self.owner})"
 
-    def delete(self, *args, **kwargs):  # TODO
-        self.logo.storage.delete(self.logo.path)
-        super(Company, self).delete(*args, **kwargs)
-
 
 class Vacancy(models.Model):
     title = models.CharField(max_length=200, null=True)
