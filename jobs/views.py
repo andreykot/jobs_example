@@ -8,8 +8,8 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import CreateView, UpdateView
 
-from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm, MyVacancyForm
-from jobs.models import Specialty, Vacancy, Company, Application
+from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm, MyVacancyForm, ResumeForm
+from jobs.models import Specialty, Vacancy, Company, Application, Resume
 
 
 def custom_handler404(request, exception):
@@ -233,6 +233,38 @@ class CreateMyVacancy(View):
 
         except ObjectDoesNotExist:
             raise HttpResponseServerError
+
+
+class ResumeEditView(UpdateView):
+    model = Resume
+    form_class = ResumeForm
+    template_name = "resume-edit.html"
+    success_url = '.'
+
+    def get_object(self):
+        return Resume.objects.get(user=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            return super().get(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return redirect(f'/myresume/create')
+
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Ваше резюме обновлено!')
+        return super().post(request, *args, **kwargs)
+
+
+class ResumeCreateView(View):
+
+    def get(self, request):
+        return render(request, "resume-create.html")
+
+    def post(self, request):
+        if not Resume.objects.filter(user=request.user).exists():
+            Resume.objects.create(user=request.user)
+        return redirect(f'/myresume/')
 
 
 class MyLoginView(LoginView):
