@@ -63,7 +63,7 @@ if __name__ == '__main__':
         [
             Company(
                 name=company['title'],
-                logo="https://place-hold.it/100x60",
+                # logo="https://place-hold.it/100x60",
             )
             for company in companies
         ]
@@ -74,7 +74,7 @@ if __name__ == '__main__':
             Specialty(
                 code=spec['code'],
                 title=spec['title'],
-                picture="https://place-hold.it/100x60"
+                # picture="https://place-hold.it/100x60"
             )
             for spec in specialties
         ]

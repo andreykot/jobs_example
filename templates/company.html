@@ -4,16 +4,16 @@
 
   <main class="container mt-3">
     <div class="navbar mt-5">
-      <p><a href="#">Назад</a></p>
+      <p><a href="{{ previous_url }}">Назад</a></p>
     </div>
     <section>
       <div class="text-center">
-        <img src="https://place-hold.it/130x80" width="130" height="80" alt="">
+        <img src="{{ company.logo.url }}" width="130" height="80" alt="">
       </div>
       <h1 class="h1 text-center mx-auto mt-0 pt-1" style="font-size: 70px;"><strong>{{ company.name }}</strong></h1>
-      <p class="text-center pt-1">Компания, {{ company.vacancies.all|length }} вакансий</p>
+      <p class="text-center pt-1">Компания, {{ vacancies|length }} вакансий</p>
       <div class="row mt-5">
-        {% for vacancy in company.vacancies.all %}
+        {% for vacancy in vacancies %}
 
         <div class="col-12 col-lg-8 offset-lg-2 m-auto">
           <div class="card mb-4">
@@ -21,16 +21,17 @@
               <div class="row">
                 <div class="col-12 col-md-8 col-lg-9">
                   <h2 class="h2 pb-2">{{ vacancy.title }}</h2>
-                  <p class="mb-2">Бэкенд • Старший (Senior) • C# • ASP.NET MVC • MySQL • Git</p>
+                  <p class="mb-2">{{ vacancy.skills }}</p>
                   <p>От {{ vacancy.salary_min }} до {{ vacancy.salary_max }} руб.</p>
                   <p class="text-muted pt-1">{{ vacancy.published_at }}</p>
                 </div>
                 <div class="col-12 col-md-4 col-lg-3 d-flex align-items-end">
-                  <img src="https://place-hold.it/130x80" width="130" height="80" alt="">
+                  <img src="{{ company.logo.url }}" width="130" height="80" alt="">
                 </div>
               </div>
             </div>
           </div>
+           <a href="/vacancies/{{ vacancy.id }}/" class="stretched-link"></a>
         </div>
 
         {% endfor %}

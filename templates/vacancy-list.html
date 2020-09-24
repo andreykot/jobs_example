@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block container %}
+  <style>
+    body {
+      background-color: #F6F2E6;
+    }
+  </style>
+
+  <main class="container mt-3 pb-5">
+    <div class="row mt-5">
+      {% include "company-card.html" %}
+      <div class="col-12 col-lg-8">
+        <div class="card">
+          <div class="card-body px-4 pb-4">
+            <section class="tab-pane fade show active">
+              <h2 class="h4 pt-2 pb-3">Вакансии</h2>
+              {% if vacancies %}
+              {% for vacancy in vacancies %}
+              <!-- vacancy state 1 -->
+              <div class="card mt-3">
+                <div class="card-body px-4">
+                  <div class="row align-items-center">
+                    <div class="col-6 col-lg-8">
+                      {% if vacancy.title %}
+                      <a href="/vacancies/{{ vacancy.id }}/" class="mb-1">{{ vacancy.title }}</a>
+                      {% else %}
+                      Пустая вакансия
+                      {% endif %}
+                      {% if vacancy.salary_min and vacancy.salary_max %}
+                      <p class="mb-1">
+                        <span class="mr-4">{{ vacancy.salary_min }} - {{ vacancy.salary_max }} руб</span>
+                        <a href="#" class="text-info">Количество откликов: {{ vacancy.applications_count }}</a>
+                      </p>
+                      {% endif %}
+                    </div>
+                    <div class="col-6 col-lg-4 text-right">
+                      <a href="/mycompany/vacancies-edit/{{ vacancy.pk }}/" class="btn btn-outline-info">Изменить</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- END vacancy state 1 -->
+              {% endfor %}
+              <div class="row p-3">
+              <a href="/mycompany/create-vacancy/" class="btn btn-info mb-2">Добавить вакансию</a>
+              </div>
+              {% else %}
+               <p class="alert alert-info" role="alert">
+                  У вас пока нет вакансий, но вы можете создать первую!
+                </p>
+               <a href="/mycompany/create-vacancy/" class="btn btn-info mb-2">Добавить вакансию</a>
+              {% endif %}
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+{% endblock %}

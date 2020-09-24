@@ -30,50 +30,37 @@
     <section class="mt-5 pt-3">
       <h2 class="h2 font-weight-normal text-center mb-5">Вакансии по рубрикам</h2>
       <div class="row mb-0">
-        {% for specialty in specialties_line1 %}
-
+        {% for specialty in specialties %}
         <div class="col-6 col-md-6 col-lg-3">
           <div class="card pt-4 text-center mb-4">
-            <img class="mx-auto d-block" src={{ specialty.picture }} width="80" height="80" alt="">
+            <img class="mx-auto d-block" src={{ specialty.picture.url }} width="80" height="80" alt="">
             <div class="card-body">
               <p class="card-text mb-2">{{ specialty.title }}</p>
               <p class="card-text"><a href="/vacancies/cat/{{ specialty.code }}/">{{ specialty.vacancies.all|length }} вакансий</a></p>
             </div>
           </div>
         </div>
+        {% if forloop.counter|divisibleby:"4" %}
+      </div>
+       <div class="row mb-4">
+        {% endif %}
 
         {% endfor %}
-
-      </div>
-      <div class="row mb-4">
-        {% for specialty in specialties_line2 %}
-
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="card pt-4 text-center mb-4">
-            <img class="mx-auto d-block" src={{ specialty.picture }} width="80" height="80" alt="">
-            <div class="card-body">
-              <p class="card-text mb-2">{{ specialty.title }}</p>
-              <p class="card-text"><a href="/vacancies/cat/{{ specialty.code }}/">{{ specialty.vacancies.all|length }} вакансий</a></p>
-            </div>
-          </div>
-        </div>
-
-        {% endfor %}
-      </div>
+         </div>
     </section>
 
     <section class="my-5 pt-3">
       <h2 class="h2 font-weight-normal text-center mb-5">Нам доверяют лучшие компании</h2>
       <div class="row mb-0">
-        {% for company in companies_line1 %}
+        {% for company in companies %}
 
         <div class="col-6 col-md-6 col-lg-3">
           <div class="card pt-4 text-center mb-4">
             <a href="#" style="max-width: 150px;" class="mx-auto d-block">
-              <img class="mx-auto d-block mw-100" src="{{ company.logo }}" alt="">
+              <img class="mx-auto d-block mw-100" src="{{ company.logo.url }}" alt="">
             </a>
             <div class="card-body">
-              <p class="card-text"><a href="/companies/{{ company.id }}/">{{ company.vacancies.all|length }} вакансий</a></p>
+              <p class="card-text"><a href="/companies/{{ company.id }}/">{{ company.vacancies_len }} вакансий</a></p>
             </div>
           </div>
         </div>
@@ -81,20 +68,7 @@
         {% endfor %}
       </div>
       <div class="row mb-4">
-        {% for company in companies_line2 %}
 
-        <div class="col-6 col-md-6 col-lg-3">
-          <div class="card pt-4 text-center mb-4">
-            <a href="#" style="max-width: 150px;" class="mx-auto d-block">
-              <img class="mx-auto d-block mw-100" src="{{ company.logo }}" alt="">
-            </a>
-            <div class="card-body">
-              <p class="card-text"><a href="/companies/{{ company.id }}/">{{ company.vacancies.all|length }} вакансий</a></p>
-            </div>
-          </div>
-        </div>
-
-        {% endfor %}
       </div>
     </section>
   </main>
