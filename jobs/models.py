@@ -51,3 +51,32 @@ class Application(models.Model):
     def __str__(self):
         return f"Specialty({self.written_username}, {self.written_phone}, {self.written_cover_letter}, " \
                f"{self.vacancy}, {self.user})"
+
+
+class Resume(models.Model):
+
+    class STATUS(models.TextChoices):
+        NOT_LOOKING = 1, "Не ищу работу"
+        CONSIDERING = 2, "Рассматриваю предложения"
+        LOOKING = 3, "Ищу работу"
+
+    class GRADE(models.TextChoices):
+        TRAINEE = 1, "Стажер"
+        JUNIOR = 2, "Junior"
+        MIDDLE = 3, "Middle"
+        SENIOR = 4, "Senior"
+        LEAD = 5, "Lead"
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=True)
+    surname = models.CharField(max_length=100, null=True)
+    status = models.CharField(max_length=100, choices=STATUS.choices, null=True)
+    salary = models.PositiveIntegerField(null=True)
+    specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='resume', null=True)
+    grade = models.CharField(max_length=100, choices=GRADE.choices, null=True)
+    education = models.TextField(null=True)
+    experience = models.TextField(null=True)
+    portfolio = models.TextField(null=True)
+
+    def __str__(self):
+        return f"Resume ({self.name}, {self.surname})"

@@ -8,8 +8,9 @@ from django.shortcuts import render, redirect
 from django.views import View
 from django.views.generic import CreateView, UpdateView
 
-from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm, MyVacancyForm
-from jobs.models import Specialty, Vacancy, Company, Application
+from jobs.forms import ApplicationForm, RegistrationForm, LoginForm, MyCompanyForm, MyVacancyForm, ResumeForm, \
+    SearchForm
+from jobs.models import Specialty, Vacancy, Company, Application, Resume
 
 
 def custom_handler404(request, exception):
@@ -23,12 +24,17 @@ def custom_handler500(request, *args, **kwargs):
 class MainView(View):
 
     def get(self, request):
+        print(request.GET)
+        if 's' in request.GET:
+            return redirect(f"/search/?s={request.GET['s']}")
+
         companies = Company.objects.filter(name__isnull=False)\
             .annotate(vacancies_len=Count('vacancies', filter=Q(vacancies__title__isnull=False)))
 
         context = {
             "specialties": Specialty.objects.all(),
             "companies": companies,
+            'form': SearchForm()
         }
 
         return render(request, "index.html", context)
@@ -91,6 +97,7 @@ class VacancyView(View):
         context = {
             'vacancy': vacancy,
             'form': ApplicationForm() if request.user.is_authenticated else None,
+            'previous_url': self.request.META['HTTP_REFERER'],
         }
 
         return render(request, "vacancy.html", context)
@@ -233,6 +240,62 @@ class CreateMyVacancy(View):
 
         except ObjectDoesNotExist:
             raise HttpResponseServerError
+
+
+class ResumeCreateView(View):
+
+    def get(self, request):
+        return render(request, "resume-create.html")
+
+    def post(self, request):
+        if not Resume.objects.filter(user=request.user).exists():
+            Resume.objects.create(user=request.user)
+        return redirect('/myresume/')
+
+
+class ResumeEditView(UpdateView):
+    model = Resume
+    form_class = ResumeForm
+    template_name = "resume-edit.html"
+    success_url = '.'
+
+    def get_object(self):
+        return Resume.objects.get(user=self.request.user)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            return super().get(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return redirect('/myresume/create')
+
+    def post(self, request, *args, **kwargs):
+        messages.success(request, 'Ваше резюме обновлено!')
+        return super().post(request, *args, **kwargs)
+
+
+class SearchView(View):
+
+    def get(self, request):
+        """
+        Поиск не работает с русскими фразами в unicode. Из-за использования sqlite?
+        """
+        try:
+            query = request.GET['s']
+        except KeyError:
+            query = None
+
+        if query:
+            vacancies = Vacancy.objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        else:
+            vacancies = None
+
+        context = {
+            'query': query,
+            'vacancies': vacancies,
+            'form': SearchForm(initial={'s': query}),
+        }
+        return render(request, "search.html", context)
 
 
 class MyLoginView(LoginView):

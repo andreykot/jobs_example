@@ -5,7 +5,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
-from jobs.models import Company, Specialty, Vacancy
+from jobs.models import Company, Specialty, Vacancy, Resume
 
 
 class ApplicationForm(forms.Form):
@@ -143,3 +143,39 @@ class MyVacancyForm(forms.ModelForm):
             "salary_min",
             "salary_max",
         )
+
+
+class ResumeForm(forms.ModelForm):
+    name = forms.CharField(max_length=100, label="Имя",)
+    surname = forms.CharField(max_length=100, label="Фамилия",)
+    status = forms.ChoiceField(choices=Resume.STATUS.choices, label="Готовность к работе",)
+    salary = forms.IntegerField(min_value=0, label="Вознаграждение", required=False)
+    specialty = forms.ModelChoiceField(queryset=Specialty.objects, label="Специализация",)
+    grade = forms.ChoiceField(choices=Resume.GRADE.choices, label="Квалификация",)
+    education = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), label="Образование", required=False)
+    experience = forms.CharField(widget=forms.Textarea(attrs={'rows': 4}), label="Опыт работы", required=False)
+    portfolio = forms.CharField(widget=forms.Textarea(attrs={'rows': 1}), label="Портфолио", required=False)
+
+    class Meta:
+        model = Resume
+        fields = (
+            "name",
+            "surname",
+            "status",
+            "salary",
+            "specialty",
+            "grade",
+            "education",
+            "experience",
+            "portfolio",
+        )
+
+
+class SearchForm(forms.Form):
+    s = forms.CharField(max_length=2000,
+                        required=False,
+                        widget=forms.TextInput(
+                            attrs={'class': 'form-control w-100',
+                                   'placeholder': "Например: ios"},
+                        )
+                        )
