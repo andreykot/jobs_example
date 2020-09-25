@@ -169,3 +169,13 @@ class ResumeForm(forms.ModelForm):
             "experience",
             "portfolio",
         )
+
+
+class SearchForm(forms.Form):
+    s = forms.CharField(max_length=2000,
+                        required=False,
+                        widget=forms.TextInput(
+                            attrs={'class': 'form-control w-100',
+                                   'placeholder': "Например: ios"},
+                        )
+                        )
